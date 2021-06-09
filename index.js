@@ -11,15 +11,17 @@ const connection = mysql.createConnection({
   database: process.env.DB_NAME,
 });
 
-connection.connect(function (error) {
-  if (error) {
-    console.error(error.message);
-    return;
-  } else {
-    console.log("connected with id " + connection.threadId);
-    startEmployeeManager();
-  }
-});
+// connection.connect(function (error) {
+//   if (error) {
+//     console.error(error.message);
+//     return;
+//   } else {
+//     console.log("connected with id " + connection.threadId);
+//     startEmployeeManager();
+//   }
+// });
+
+startEmployeeManager();
 
 function startEmployeeManager() {
   inquirer
@@ -69,38 +71,40 @@ function startEmployeeManager() {
     });
 }
 
-function listDepartments(){
+function addDepartment() {
     connection.query(
         "SELECT * from departments",
         function (err, results, fields) {
-          console.table(results);
-        });
-}
-function addDepartment() {
-    listDepartments();
-      inquirer
-        .prompt([
-          {
-            type: "input",
-            message: "What is the name of the department you want to add.",
-            name: "department",
-          },
-        ])
-        .then((answers) => {
-          console.log(answers);
-          connection.query(
-            "INSERT into departments (`dept_name`) VALUES (?)",
-            [answers.department],
-            function (err, results, fields) {
-              if (err) {
-                console.error(err.message);
-              } else {
-                listDepartments()
-                startEmployeeManager()
-              }
-            }
-          );
-        });
+            console.table(results);
+            inquirer.prompt([
+                {
+                type: "input",
+                message: "What is the name of the department you want to add.",
+                name: "department",
+                },
+            ])
+            .then((answers) => {
+                console.log(answers);
+                connection.query(
+                    "INSERT into departments (`dept_name`) VALUES (?)",
+                    [answers.department],
+                    function (err, results, fields) {
+                        if (err) {
+                            console.error(err.message);
+                        } else {
+                            connection.query(
+                                "SELECT * from departments",
+                                function (err, results, fields) {
+                                    console.table(results);
+                                    startEmployeeManager()
+                                }
+                            );
+                        }
+                    }
+                )
+            });
+        }
+    );
     
   
 }
